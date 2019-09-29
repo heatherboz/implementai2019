@@ -1,20 +1,17 @@
 import requests
 import json
-<<<<<<< HEAD
 import datetime
+import random
 from pymongo import MongoClient
 
 client = MongoClient()
 client = MongoClient('localhost', 27017)
 db = client.fall
 
-=======
-import matplotlib.pyplot as plt
->>>>>>> 1bc150dc589ded2c43d30325e9887ebdb38a4b0c
-
 content_type_header = {
     'Content-Type': 'application/json',
 }
+
 
 '''
 Sends a post request to login to wrnch.
@@ -31,6 +28,7 @@ def login(username, password):
         'Authorization': 'Bearer ' + access_token_string,
     }
     return headers2
+
 
 '''
 Submits a new job to wrnch.
@@ -69,7 +67,7 @@ Void
 '''
 def add_to_job_db(location, data, fallen):
     collection = db.montreal_falls
-    to_post = {"lng": location[0], "lat": location[1], "fallen": fallen}
+    to_post = {"lng": location[1], "lat": location[0], "fallen": fallen}
     collection.insert_one(to_post)
     return
 
@@ -79,7 +77,7 @@ Checks if a certain job has been processed already, if processed adds to db.
 
 Void
 '''
-def process_and_add_job(job_id, login_header):
+def process_and_add_job(job_id, login_header, job_id_to_video):
     job_details = get_job(job_id, login_header)
     response_json = json.loads(job_details)
     if 'message' in response_json:
@@ -87,7 +85,12 @@ def process_and_add_job(job_id, login_header):
     else:
         data = job_details
         is_fall = detect_fall(data)
-        location = ['45.3','21.55']
+        location = get_random_location()
+        print("Results for video: %s\n", job_id_to_video[job_id])
+        print("---------------------------------------------")
+        print("Got random location of: %s\n", location)
+        print("Is_Fall: %s\n", is_fall)
+
         add_to_job_db(location, data, is_fall)
         return True
 
@@ -117,6 +120,16 @@ def detect_fall(data):
 
 
 '''
+Gets a random location and returns it's longitude and latitude.
+
+Returns a location array of format: [x,y].
+'''
+def get_random_location():
+    locations = [[45.508596, -73.571207], [45.512754, -73.573411], [45.509999, -73.570449], [45.509438, -73.573591], [45.510591, -73.570255], [45.507900, -73.575029],[45.506199, -73.572583], [45.503358, -73.579510], [45.503080, -73.579016], [45.502651, -73.578093], [45.497663, -73.577832]]
+    return (random.choice(locations))
+
+
+'''
 Gets input from python for location and filepath.
 
 Adds job to database.
@@ -124,12 +137,46 @@ Adds job to database.
 def take_job():
     val = input("Enter location data (x,y):")
 
+
+'''
+Ask for update.
+
+Asks user for update!
+'''
+def ask_update():
+    txt_to_input = raw_input ("Do you want to check if videos are processed?")
+    return
+
 w = open("logins.json", 'r')
 login_info = json.load(w)
 username = login_info["wrnchLogin"]["username"]
 password = login_info["wrnchLogin"]["password"]
 
 login_header = login(username, password)
-# job_id = submit_job("data/person_walking.mp4", login_header)
-job_id = ""
-process_and_add_job(job_id,login_header)
+
+list_of_job_ids = []
+videos_seen = []
+
+job_id_to_video = {}
+
+while(True):
+    not_yet_submitted_videos = list(set(login_info["videos"]) - set(videos_seen))
+
+    # Submits all outstanding jobs
+    for video in not_yet_submitted_videos:
+        job_id = submit_job(video, login_header)
+        videos_seen.append(video)
+        list_of_job_ids.append(job_id)
+        job_id_to_video[job_id] = video
+
+    print("Videos to Process: \n")
+    for key in list_of_job_ids:
+        print(job_id_to_video[key])
+    # Asks for update.
+    ask_update()
+
+    # Once asked for update, attempts to process and add each job in list of ids
+    copy_of_list = list_of_job_ids
+    for job in copy_of_list:
+        if process_and_add_job(job,login_header,job_id_to_video):
+            list_of_job_ids.remove(job)
