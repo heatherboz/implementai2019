@@ -1,5 +1,12 @@
 import requests
 import json
+import datetime
+from pymongo import MongoClient
+
+client = MongoClient()
+client = MongoClient('localhost', 27017)
+db = client.fall
+
 
 content_type_header = {
     'Content-Type': 'application/json',
@@ -57,6 +64,9 @@ Adds the location, data and if the user has fallen into the database.
 Void
 '''
 def add_to_job_db(location, data, fallen):
+    collection = db.montreal_falls
+    to_post = {"lng": location[0], "lat": location[1], "fallen": fallen}
+    collection.insert_one(to_post)
     return
 
 
@@ -73,6 +83,7 @@ def process_and_add_job(job_id, login_header):
     else:
         data = job_details
         is_fall = detect_fall(data)
+        location = ['45.3','21.55']
         add_to_job_db(location, data, is_fall)
         return True
 
@@ -82,17 +93,8 @@ Detects a fall depending on data given.
 
 Returns a boolean if the video is considered a fall.
 '''
-# def detect_fall(data):
-#     print ("detecting fall...")
-#     data = json.loads(data)
-#     frames_len = len(data["frames"])
-#     y_vel1 = data["frames"[0]]["head_pose"]["bbox"]["minY"]
-#     y_vel2 = data["frames"[frames_len -1]]["head_pose"]["bbox"]["minY"]
-#
-#     y_vel = (y_vel2 - yvel1)/frames_len
-#
-#     if y_vel > 5:
-#         return True
+def detect_fall(data):
+    return True
 
 
 
@@ -105,11 +107,11 @@ Adds job to database.
 def take_job():
     val = input("Enter location data (x,y):")
 
-# w = open("logins.json", 'r')
-# login_info = json.load(w)
-# username = login_info["wrnchLogin"]["username"]
-# password = login_info["wrnchLogin"]["password"]
-#
-# login_header = login(username, password)
-# job_id = submit_job("data/personfalling.jpg", login_header)
-# process_and_add_job(job_id,login_header)
+w = open("logins.json", 'r')
+login_info = json.load(w)
+username = login_info["wrnchLogin"]["username"]
+password = login_info["wrnchLogin"]["password"]
+
+login_header = login(username, password)
+job_id = submit_job("data/personfalling.jpg", login_header)
+process_and_add_job(job_id,login_header)

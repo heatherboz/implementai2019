@@ -1,0 +1,68 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Will I Fall On My Way?</title>
+    <link rel="stylesheet" href="css/bulma.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.0.0/js/all.js"></script>
+
+    <meta charset="utf-8">
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 94%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        overflow: hidden;
+        overflow-x: hidden;
+      }
+    </style>
+  </head>
+  <body>
+      <section class="hero is-info" style="overflow: hidden">
+          <div class="hero-head">
+              <nav class="navbar">
+                  <div class="container">
+                      <div class="navbar-brand">
+                          <a class="navbar-item" href="../">
+                              <img src="http://bulma.io/images/bulma-type-white.png" alt="Logo">
+                          </a>
+                          <span class="navbar-burger burger" data-target="navbarMenu">
+                              <span></span>
+                              <span></span>
+                              <span></span>
+                          </span>
+                      </div>
+              </nav>
+              </div>
+      </section>
+      <div id="map"></div>
+      <script>
+        var map;
+        function initMap() {
+          map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: 45.5581968, lng: -73.870385},
+            zoom: 8
+          });
+          var myltlng;
+          var marker;
+          <% for(var i=0; i < data.length; i++) { %>
+              myltlng = {lat: <%= data[i].lat %>, lng: <%= data[i].lng %>}
+              marker = new google.maps.Marker({
+                position: myltlng,
+                map: map,
+                title: 'Fall!'
+              });
+              console.log(<%= data[i].lat %>)
+            <% } %>
+        }
+      </script>
+      <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBGzl0jEL8vtvKKrYOan4eqdWNUn-MVeYU&callback=initMap"
+      async defer></script>
+  </body>
+</html>
