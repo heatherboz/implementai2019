@@ -106,16 +106,33 @@ def detect_fall(data):
     frames_len = len(data["frames"])
     for i in range(frames_len):
 
-        if len(data["frames"][i]["persons"]) == 0:
-            print ("no people!")
-        else:
-            ankle_pos = data["frames"][i]["persons"][0]["pose2d"]["joints"][1]
-            hip_pos = data["frames"][i]["persons"][0]["pose2d"]["joints"][5]
+        if not (len(data["frames"][i]["persons"]) == 0):
+            r_ankle_pos = data["frames"][i]["persons"][0]["pose2d"]["joints"][1]
+            r_hip_pos = data["frames"][i]["persons"][0]["pose2d"]["joints"][5]
             neck_pos = data["frames"][i]["persons"][0]["pose2d"]["joints"][25]
+            head_pos = data["frames"][i]["persons"][0]["pose2d"]["joints"][33]
+            l_ankle_pos = data["frames"][i]["persons"][0]["pose2d"]["joints"][11]
+            l_hip_pos = data["frames"][i]["persons"][0]["pose2d"]["joints"][7]
+
             frame_num = i
 
-            if ankle_pos < hip_pos:
+
+            if r_ankle_pos < r_hip_pos:
+                print ("right ankle below hip!")
                 return True
+
+            if l_ankle_pos < l_hip_pos:
+                print("left ankle below hip!")
+                return True
+
+            if head_pos >= l_hip_pos:
+                print("head below l hip")
+                return True
+
+            if head_pos >= r_hip_pos:
+                print("head below r hip")
+                return True
+    print ("no one fell!")
     return False
 
 
